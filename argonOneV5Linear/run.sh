@@ -5,7 +5,6 @@
 # 1) Utilities
 ##############################################################################
 
-# Ensure bc always sees a float
 mkfloat() {
   local str="$1"
   [[ $str != *"."* ]] && str="${str}.0"
@@ -99,7 +98,7 @@ fan_speed_report() {
 }
 
 ##############################################################################
-# 5) Native PWM (Pi 5) fallback
+# 5) Pi 5 native PWM fallback
 ##############################################################################
 detect_pwm_sysfs() {
   for d in /sys/devices/platform/cooling_fan/hwmon/*; do
@@ -123,27 +122,30 @@ i2c_fail_count=0
 I2C_FAIL_THRESHOLD=5
 
 ##############################################################################
-# 6) Write fan PWM with robust fallback (V5 register + legacy + PWM)
+# 6) Robust writer: i2ctransfer → i2cset → PWM
 ##############################################################################
 action_linear() {
   local pct=$1 temp=$2 unit=$3
   (( pct < 0 )) && pct=0
   (( pct > 100 )) && pct=100
-  local hex; printf -v hex '0x%02x' "$pct"
 
-  printf '%s: %s%s – Fan %s%% | hex:(%s)\n' "$(date '+%F_%T')" "$temp" "$unit" "$pct" "$hex"
+  printf '%s: %s%s – Fan %s%%\n' "$(date '+%F_%T')" "$temp" "$unit" "$pct"
 
   local ok=0
   if [[ -n "$port" ]]; then
-    # Preferred Argon One V5 on Pi 5: register 0x80 + value, try 0x1a then 0x1b
-    if i2cset -y "$port" 0x1a 0x80 "$hex" >/dev/null 2>&1; then
+    # Preferred: V5 (register 0x80 + value) via i2ctransfer (write two bytes)
+    if i2ctransfer -y "$port" w2@0x1a 0x80 "$pct" >/dev/null 2>&1; then
       ok=1
-    elif i2cset -y "$port" 0x1b 0x80 "$hex" >/dev/null 2>&1; then
+    elif i2ctransfer -y "$port" w2@0x1b 0x80 "$pct" >/dev/null 2>&1; then
       ok=1
-    # Legacy single-byte (older cases/firmware)
-    elif i2cset -y "$port" 0x1a "$hex" >/dev/null 2>&1; then
+    # Fallback: i2cset with register form then legacy single-byte
+    elif i2cset -y "$port" 0x1a 0x80 0x$(printf '%02x' "$pct") >/dev/null 2>&1; then
       ok=1
-    elif i2cset -y "$port" 0x1b "$hex" >/dev/null 2>&1; then
+    elif i2cset -y "$port" 0x1b 0x80 0x$(printf '%02x' "$pct") >/dev/null 2>&1; then
+      ok=1
+    elif i2cset -y "$port" 0x1a 0x$(printf '%02x' "$pct") >/dev/null 2>&1; then
+      ok=1
+    elif i2cset -y "$port" 0x1b 0x$(printf '%02x' "$pct") >/dev/null 2>&1; then
       ok=1
     fi
   fi
@@ -151,7 +153,7 @@ action_linear() {
   if (( ok )); then
     i2c_fail_count=0
   else
-    echo "I²C write failed on 0x1a/0x1b (0x80+val and single byte)"
+    echo "I²C write failed on 0x1a/0x1b (transfer + set paths)"
     ((i2c_fail_count++))
     if (( i2c_fail_count >= I2C_FAIL_THRESHOLD )) && [[ -n "$PWM_DIR" ]]; then
       if write_pwm_native "$pct"; then

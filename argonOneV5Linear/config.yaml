@@ -10,32 +10,32 @@ hassio_role: homeassistant
 hassio_api: true
 devices:
   - /dev/i2c-0:/dev/i2c-0:rwm     # the script probes bus 0 first
-  - /dev/i2c-1:/dev/i2c-0:rwm
-  - /dev/i2c-2:/dev/i2c-0:rwm
-  - /dev/i2c-3:/dev/i2c-0:rwm
-  - /dev/i2c-4:/dev/i2c-0:rwm
-  - /dev/i2c-5:/dev/i2c-0:rwm
-  - /dev/i2c-6:/dev/i2c-0:rwm
-  - /dev/i2c-7:/dev/i2c-0:rwm
-  - /dev/i2c-8:/dev/i2c-0:rwm
-  - /dev/i2c-9:/dev/i2c-0:rwm
-  - /dev/i2c-10:/dev/i2c-0:rwm
-  - /dev/i2c-11:/dev/i2c-0:rwm
-  - /dev/i2c-12:/dev/i2c-0:rwm
+  - /dev/i2c-1:/dev/i2c-1:rwm
+  - /dev/i2c-2:/dev/i2c-2:rwm
+  - /dev/i2c-3:/dev/i2c-3:rwm
+  - /dev/i2c-4:/dev/i2c-4:rwm
+  - /dev/i2c-5:/dev/i2c-5:rwm
+  - /dev/i2c-6:/dev/i2c-6:rwm
+  - /dev/i2c-7:/dev/i2c-7:rwm
+  - /dev/i2c-8:/dev/i2c-8:rwm
+  - /dev/i2c-9:/dev/i2c-9:rwm
+  - /dev/i2c-10:/dev/i2c-10:rwm
+  - /dev/i2c-11:/dev/i2c-11:rwm
+  - /dev/i2c-12:/dev/i2c-12:rwm
   - /dev/i2c-13:/dev/i2c-13:rwm
-  - /dev/i2c-14:/dev/i2c-0:rwm
-  - /dev/i2c-15:/dev/i2c-0:rwm
-  - /dev/i2c-16:/dev/i2c-0:rwm
-  - /dev/i2c-17:/dev/i2c-0:rwm
-  - /dev/i2c-18:/dev/i2c-0:rwm
-  - /dev/i2c-19:/dev/i2c-0:rwm
-  - /dev/i2c-20:/dev/i2c-0:rwm
-  - /dev/i2c-21:/dev/i2c-0:rwm
-  - /dev/i2c-22:/dev/i2c-0:rwm
-  - /dev/i2c-23:/dev/i2c-0:rwm
-  - /dev/i2c-24:/dev/i2c-0:rwm
-  - /dev/i2c-25:/dev/i2c-0:rwm
-  - /dev/i2c-26:/dev/i2c-0:rwm
+  - /dev/i2c-14:/dev/i2c-14:rwm
+  - /dev/i2c-15:/dev/i2c-15:rwm
+  - /dev/i2c-16:/dev/i2c-16:rwm
+  - /dev/i2c-17:/dev/i2c-17:rwm
+  - /dev/i2c-18:/dev/i2c-18:rwm
+  - /dev/i2c-19:/dev/i2c-19:rwm
+  - /dev/i2c-20:/dev/i2c-20:rwm
+  - /dev/i2c-21:/dev/i2c-21:rwm
+  - /dev/i2c-22:/dev/i2c-22:rwm
+  - /dev/i2c-23:/dev/i2c-23:rwm
+  - /dev/i2c-24:/dev/i2c-24:rwm
+  - /dev/i2c-25:/dev/i2c-25:rwm
+  - /dev/i2c-26:/dev/i2c-26:rwm
 privileged:
   - SYS_RAWIO                     # lets i2cset/i2cget issue raw ioctl calls
 url: https://community.home-assistant.io/t/argon-one-active-cooling-addon/262598/
