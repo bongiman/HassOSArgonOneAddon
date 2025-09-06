@@ -1,5 +1,5 @@
 name: ArgonOne V5 Active Linear Cooling
-version: "1.0.5"
+version: "1.0.6"
 slug: argon_one_v5_temp_linear
 description: Actively keeping your ArgonOne V5 cool on a Pi5.
 arch:
