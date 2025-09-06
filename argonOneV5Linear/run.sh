@@ -123,7 +123,7 @@ fi
 port=${thePort};
 echo "I2C Port ${port}";
 #Trap exits and set fan to 100% like a safe mode.
-trap 'echo "Failed ${LINENO}: $BASH_COMMAND";i2cset -y ${port} 0x01a 0x63;previousFanLevel=-1;fanLevel=-1; echo "Safe Mode Activated!";' ERR EXIT INT TERM
+trap 'echo "Failed ${LINENO}: $BASH_COMMAND"; i2cset -y ${port} 0x01a 0x63; previousFanLevel=-1; fanLevel=-1; echo "Safe Mode Activated!"' ERR EXIT INT TERM
 
 
 
