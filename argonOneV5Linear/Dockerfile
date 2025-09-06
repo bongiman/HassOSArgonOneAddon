@@ -6,7 +6,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ENV LANG C.UTF-8
 WORKDIR /data
 
-RUN apk update && apk add --no-cache i2c-tools
+RUN apk update && apk add --no-cache i2c-tools bc
 
 COPY run.sh /
 RUN chmod a+x /run.sh

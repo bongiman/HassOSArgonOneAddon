@@ -1,5 +1,5 @@
 name: ArgonOne V5 Active Linear Cooling
-version: "1.0.3"
+version: "1.0.4"
 slug: argon_one_v5_temp_linear
 description: Actively keeping your ArgonOne V5 cool on a Pi5.
 arch:
@@ -45,14 +45,12 @@ map:
   - share
   - media
 options:
-  Celsius or Fahrenheit: F
-  Minimum Temperature: 130
-  Maximum Temperature: 150
-  Create a Fan Speed entity in Home Assistant: false
-  Log current temperature every 30 seconds: true
+  Minimum Temperature: 55
+  Maximum Temperature: 85
+  Temperature Unit: F
+  Create Entity: true
 schema:
-  Celsius or Fahrenheit: list(C|F)
-  Minimum Temperature: int(0,255)
-  Maximum Temperature: int(0,255)
-  Create a Fan Speed entity in Home Assistant: bool
-  Log current temperature every 30 seconds: bool
+  Minimum Temperature: int(32,200)
+  Maximum Temperature: int(32,200)
+  Temperature Unit: list(C|F)
+  Create Entity: bool
