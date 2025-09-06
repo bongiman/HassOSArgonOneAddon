@@ -1,10 +1,8 @@
-name: ArgonOne V3 Active Linear Cooling
-version: 30a
-slug: argon_one_v3_temp_linear
-description: Actively keeping your ArgonOne V3 cool.
+name: ArgonOne V5 Active Linear Cooling
+version: "1.0.0"
+slug: argon_one_v5_temp_linear
+description: Actively keeping your ArgonOne V5 cool on a Pi5.
 arch:
-  - armhf
-  - armv7
   - aarch64
 auth_api: true
 homeassistant_api: true

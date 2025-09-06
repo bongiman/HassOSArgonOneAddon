@@ -26,8 +26,11 @@ calibrateI2CPort() {
     echo "checking i2c port ${port} at ${device}";
     detection=$(i2cdetect -y "${port}");
     echo "${detection}"
-    [[ "${detection}" == *"10: -- -- -- -- -- -- -- -- -- -- 1a -- -- -- -- --"* ]] && thePort=${port} && echo "found at $device" && break;
-    [[ "${detection}" == *"10: -- -- -- -- -- -- -- -- -- -- -- 1b -- -- -- --"* ]] && thePort=${port} && echo "found at $device" && break;
+    if echo "${detection}" | grep -q -E ' 1a | 1b '; then
+      thePort=${port}
+      echo "found at $device"
+      break
+    fi
     echo "not found on ${device}"
   done;
 } 
@@ -56,7 +59,7 @@ fanSpeedReportLinear(){
   cpuTemp=${2}
   CorF=${3}
   icon=mdi:fan
-  reqBody='{"state": "'"${fanPercent}"'", "attributes": { "unit_of_measurement": "%", "icon": "'"${icon}"'", "Temperature '"${CorF}"'": "'"${cpuTemp}"'", "friendly_name": "Argon Fan Speed"}}'
+  reqBody='{"state": "'"${fanPercent}"'", "attributes": { "unit_of_measurement": "%", "icon": "'"${icon}"'", "Temperature '"${CorF}"'"': "'"${cpuTemp}"'", "friendly_name": "Argon Fan Speed"}}'
   exec 3<>/dev/tcp/hassio/80
   echo -ne "POST /homeassistant/api/states/sensor.argon_one_addon_fan_speed HTTP/1.1\r\n" >&3
   echo -ne "Connection: close\r\n" >&3
@@ -93,7 +96,7 @@ actionLinear() {
 
   printf '%(%Y-%m-%d_%H:%M:%S)T'
   echo ": ${cpuTemp}${CorF} - Fan ${fanPercent}% | hex:(${fanPercentHex})";
-  i2cset -y "${port}" "0x01a" "0x80" "${fanPercentHex}"
+  i2cset -y "${port}" 0x1a "${fanPercentHex}"
   returnValue="${?}"
   test "${createEntity}" == "true" && fanSpeedReportLinear "${fanPercent}" "${cpuTemp}" "${CorF}" &
   return "${returnValue}"
@@ -114,6 +117,10 @@ previousFanPercent=-1;
 
 echo "Detecting Layout of i2c, we expect to see \"1a\" here."
 calibrateI2CPort;
+if [ -z "${thePort}" ]; then
+  bashio::log.error "Argon One device not found on any i2c port."
+  bashio::exit.nok "Exiting due to no device found."
+fi
 port=${thePort};
 echo "I2C Port ${port}";
 #Trap exits and set fan to 100% like a safe mode.
