@@ -51,9 +51,9 @@ calibrateI2CPort() {
 # 3. Pure-bash float comparison
 #################################
 # Usage: fcomp "1.23" -le "4.56"
+
 fcomp() {
   local a="$1" op="$2" b="$3"
-
   # strip sign and keep sign separately
   local signA=1 signB=1
   [[ $a == -* ]] && signA=-1 a=${a#-}
@@ -66,16 +66,14 @@ fcomp() {
   [[ $a == "$ai" ]] && af=""
   [[ $b == "$bi" ]] && bf=""
 
-  # pad fractional parts to same length without external tools
+  # pad fractional parts to same length
   while ((${#af} < ${#bf})); do af="${af}0"; done
   while ((${#bf} < ${#af})); do bf="${bf}0"; done
 
   # build comparable integers with sign
-  local A="${ai}${af}"
-  local B="${bi}${bf}"
+  local A="${ai}${af}" B="${bi}${bf}"
   [[ -z $A ]] && A=0
   [[ -z $B ]] && B=0
-
   (( A = signA * A ))
   (( B = signB * B ))
 
@@ -98,7 +96,7 @@ fanSpeedReportLinear() {
   local fanPercent=$1 cpuTemp=$2 unit=$3
   local icon=mdi:fan
   local body
-  body=$(jq -nc --arg s "$fanPercent" --arg t "${cpuTemp}" --arg u "$unit" --arg icon "$icon" '{
+  body=$(jq -nc --arg s "$fanPercent" --arg t "$cpuTemp" --arg u "$unit" --arg icon "$icon" '{
     state: $s,
     attributes: {
       unit_of_measurement: "%",
@@ -122,8 +120,7 @@ fanSpeedReportLinear() {
 actionLinear() {
   local fanPercent=$1 cpuTemp=$2 unit=$3
   (( fanPercent < 0 ))  && fanPercent=0
-  (( fanPercent > 100 )) && fanPercent=100
-
+  (( fanPercent > 100 ))&& fanPercent=100
   local fanHex
   printf -v fanHex '0x%02x' "${fanPercent}"
 
@@ -144,11 +141,12 @@ actionLinear() {
 # 6. Read add-on options
 #################################
 
-tmini=$(jq -r '."Minimum Temperature"'  /data/options.json 2>/dev/null || echo 55)
-tmaxi=$(jq -r '."Maximum Temperature"'  /data/options.json 2>/dev/null || echo 85)
+tmini=$(jq -r '."Minimum Temperature"' /data/options.json 2>/dev/null || echo 55)
+tmaxi=$(jq -r '."Maximum Temperature"' /data/options.json 2>/dev/null || echo 85)
 createEntity=$(jq -r '."Create Entity"' /data/options.json 2>/dev/null || echo false)
-tempUnit=$(jq -r '."Temperature Unit"'  /data/options.json 2>/dev/null || echo "F")
+tempUnit=$(jq -r '."Temperature Unit"' /data/options.json 2>/dev/null || echo "F")
 
+# normalize to floats
 tmini=$(mkfloat "$tmini")
 tmaxi=$(mkfloat "$tmaxi")
 
@@ -177,7 +175,7 @@ while true; do
   # Decide fan speed
   if fcomp "${cpuTemp}" -le "${tmini}"; then
     fan=0
-  elif fcomp "${cpuTemp}" -ge "${tmini}"; then
+  elif fcomp "${cpuTemp}" -ge "${tmaxi}"; then
     fan=100
   else
     range=$(echo "scale=2; ${tmaxi} - ${tmini}" | bc)
