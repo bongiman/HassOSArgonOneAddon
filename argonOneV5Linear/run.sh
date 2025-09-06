@@ -108,15 +108,18 @@ actionLinear() {
     
     echo "$(date '+%Y-%m-%d_%H:%M:%S'): ${cpuTemp}${CorF} - Fan ${fanPercent}% | hex:(${fanPercentHex})"
     
-    # Try to write to I2C device with error handling
-    if i2cset -y "${port}" 0x1a "${fanPercentHex}" 2>/dev/null; then
-        returnValue=0
-    else
-        echo "Failed ${LINENO}: i2cset -y \"${port}\" 0x1a \"${fanPercentHex}\""
-        echo "Error: Write failed"
-        echo "Safe Mode Activated!"
-        returnValue=1
+    # Try to write to I2C device with error handling and fallback
+    if ! i2cset -y "${port}" 0x1a "${fanPercentHex}" >/dev/null 2>&1; then
+        i2cset -y "${port}" 0x1b "${fanPercentHex}" >/dev/null 2>&1 || {
+            echo "I²C write failed on both 0x1a and 0x1b"
+            echo "Failed ${LINENO}: i2cset -y \"${port}\" 0x1a/0x1b \"${fanPercentHex}\""
+            echo "Error: Write failed"
+            echo "Safe Mode Activated!"
+            returnValue=1
+            return "${returnValue}"
+        }
     fi
+    returnValue=0
     
     test "${createEntity}" == "true" && fanSpeedReportLinear "${fanPercent}" "${cpuTemp}" "${CorF}" &
     return "${returnValue}"
