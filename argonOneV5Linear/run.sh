@@ -24,13 +24,14 @@ calibrateI2CPort() {
   fi
 
   echo 'Detecting Layout of I²C, we expect to see "1a" here.'
+  local thePort=""
   for device in /dev/i2c-*; do
-    port=${device##*/i2c-}
-    echo "checking i2c port ${port} at ${device}"
-    detection=$(i2cdetect -y "$port")
+    local port_scan=${device##*/i2c-}
+    echo "checking i2c port ${port_scan} at ${device}"
+    detection=$(i2cdetect -y "$port_scan")
     echo "$detection"
     if echo "$detection" | grep -q -E ' 1a | 1b '; then
-      thePort=$port
+      thePort=$port_scan
       echo "found at $device"
       break
     fi
@@ -53,7 +54,7 @@ calibrateI2CPort() {
 fcomp() {
   local a="$1" op="$2" b="$3"
 
-  # strip signs, capture sign separately
+  # strip sign and keep sign separately
   local signA=1 signB=1
   [[ $a == -* ]] && signA=-1 a=${a#-}
   [[ $b == -* ]] && signB=-1 b=${b#-}
@@ -65,23 +66,16 @@ fcomp() {
   [[ $a == "$ai" ]] && af=""
   [[ $b == "$bi" ]] && bf=""
 
-  # pad fractional parts to same length
-  local la=${#af} lb=${#bf}
-  if (( la < lb )); then
-    af="${af}$(printf '%0.s0' $(seq 1 $((lb-la))))"
-  elif (( lb < la )); then
-    bf="${bf}$(printf '%0.s0' $(seq 1 $((la-lb))))"
-  fi
+  # pad fractional parts to same length without external tools
+  while ((${#af} < ${#bf})); do af="${af}0"; done
+  while ((${#bf} < ${#af})); do bf="${bf}0"; done
 
   # build comparable integers with sign
   local A="${ai}${af}"
   local B="${bi}${bf}"
-
-  # handle empty ints as 0
   [[ -z $A ]] && A=0
   [[ -z $B ]] && B=0
 
-  # apply sign
   (( A = signA * A ))
   (( B = signB * B ))
 
