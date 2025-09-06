@@ -1,5 +1,5 @@
 name: ArgonOne V5 Active Linear Cooling
-version: "1.0.4"
+version: "1.0.5"
 slug: argon_one_v5_temp_linear
 description: Actively keeping your ArgonOne V5 cool on a Pi5.
 arch:
@@ -47,9 +47,9 @@ map:
   - share
   - media
 options:
-  Minimum Temperature: 55
-  Maximum Temperature: 85
-  Temperature Unit: F
+  Minimum Temperature: 32
+  Maximum Temperature: 60
+  Temperature Unit: C
   Create Entity: true
 schema:
   Minimum Temperature: int(32,200)
