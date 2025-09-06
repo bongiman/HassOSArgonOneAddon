@@ -94,8 +94,7 @@ actionLinear() {
     fanPercentHex=$(printf '0x%x' "${fanPercent}")
   fi;
 
-  printf '%(%Y-%m-%d_%H:%M:%S)T'
-  echo ": ${cpuTemp}${CorF} - Fan ${fanPercent}% | hex:(${fanPercentHex})";
+  echo "$(date '+%Y-%m-%d_%H:%M:%S'): ${cpuTemp}${CorF} - Fan ${fanPercent}% | hex:(${fanPercentHex})";
   i2cset -y "${port}" 0x1a "${fanPercentHex}"
   returnValue="${?}"
   test "${createEntity}" == "true" && fanSpeedReportLinear "${fanPercent}" "${cpuTemp}" "${CorF}" &
