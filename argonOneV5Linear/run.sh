@@ -98,7 +98,7 @@ fanSpeedReportLinear() {
   local fanPercent=$1 cpuTemp=$2 unit=$3
   local icon=mdi:fan
   local body
-  body=$(jq -nc --arg s "$fanPercent" --arg t "$cpuTemp" --arg u "$unit" --arg icon "$icon" '{
+  body=$(jq -nc --arg s "$fanPercent" --arg t "${cpuTemp}" --arg u "$unit" --arg icon "$icon" '{
     state: $s,
     attributes: {
       unit_of_measurement: "%",
@@ -122,13 +122,13 @@ fanSpeedReportLinear() {
 actionLinear() {
   local fanPercent=$1 cpuTemp=$2 unit=$3
   (( fanPercent < 0 ))  && fanPercent=0
-  (( fanPercent > 100 ))&& fanPercent=100
+  (( fanPercent > 100 )) && fanPercent=100
 
   local fanHex
-  printf -v fanHex '0x%02x' "$fanPercent"
+  printf -v fanHex '0x%02x' "${fanPercent}"
 
   printf '%s: %s%s – Fan %s%% | hex:(%s)\n' \
-    "$(date '+%Y-%m-%d_%H:%M:%S')" "$cpuTemp" "$unit" "$fanPercent" "$fanHex"
+    "$(date '+%Y-%m-%d_%H:%M:%S')" "${cpuTemp}" "${unit}" "${fanPercent}" "${fanHex}"
 
   if ! i2cset -y "$port" 0x1a "$fanHex" >/dev/null 2>&1; then
     i2cset -y "$port" 0x1b "$fanHex" >/dev/null 2>&1 || {
@@ -137,7 +137,7 @@ actionLinear() {
     }
   fi
 
-  [[ $createEntity == true ]] && fanSpeedReportLinear "$fanPercent" "$cpuTemp" "$unit" &
+  [[ $createEntity == true ]] && fanSpeedReportLinear "${fanPercent}" "${cpuTemp}" "${unit}" &
 }
 
 #################################
@@ -163,28 +163,28 @@ calibrateI2CPort
 while true; do
   # Read CPU temperature
   cpuRaw=$(cat /sys/class/thermal/thermal_zone0/temp)
-  cpuC=$(echo "scale=1; $cpuRaw/1000" | bc)
+  cpuC=$(echo "scale=1; ${cpuRaw}/1000" | bc)
 
   if [[ $tempUnit == "C" ]]; then
     cpuTemp=$cpuC; unit="°C"
   else
-    cpuTemp=$(echo "scale=1; $cpuC*9/5+32" | bc)
+    cpuTemp=$(echo "scale=1; ${cpuC}*9/5+32" | bc)
     unit="°F"
   fi
 
-  echo "Current Temperature = $cpuTemp $unit"
+  echo "Current Temperature = ${cpuTemp} ${unit}"
 
   # Decide fan speed
-  if fcomp "$cpuTemp" -le "$tmini"; then
+  if fcomp "${cpuTemp}" -le "${tmini}"; then
     fan=0
-  elif fcomp "$cpuTemp" -ge "$tmaxi"; then
+  elif fcomp "${cpuTemp}" -ge "${tmini}"; then
     fan=100
   else
-    range=$(echo "scale=2; $tmaxi - $tmini" | bc)
-    diff=$(echo  "scale=2; $cpuTemp - $tmini" | bc)
-    fan=$(echo  "scale=0;  $diff * 100 / $range" | bc)
+    range=$(echo "scale=2; ${tmaxi} - ${tmini}" | bc)
+    diff=$(echo  "scale=2; ${cpuTemp} - ${tmini}" | bc)
+    fan=$(echo  "scale=0;  ${diff} * 100 / ${range}" | bc)
   fi
 
-  actionLinear "$fan" "$cpuTemp" "$unit"
+  actionLinear "${fan}" "${cpuTemp}" "${unit}"
   sleep 30
 done
